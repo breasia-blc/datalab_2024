@@ -1,0 +1,67 @@
+---
+title: "Sewanee Climate"
+author: "BreAsia Calhoun"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+<html>
+<head>
+<style>
+body {font-family: Times New Roman;}
+</style>
+</head>
+<body>
+
+# Introduction
+### Our Questions
+1. What is the average temperature per year at Sewanee from 2010 to 2020?
+2. What is  Minimum and Maximum temperature over time for the entire period. 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, mesage=FALSE)
+
+library(tidyverse)
+library(dplyr)
+library(lubridate)
+
+sewanee_climate <- read_csv("~/Desktop/datalab/climate_sewanee/sewanee_weather.csv")
+
+```
+
+# Average Temperature per year at Sewanee from 2010 to 2020
+```{r}
+sewanee_climate <- sewanee_climate %>% 
+  mutate(year = year(DATE)) %>% 
+  mutate(avg_temp=(TMAX+TMIN)/2)
+  
+climate_2010_2020 <- sewanee_climate %>%
+  filter(year>=2010, year<= 2020) %>%
+  filter( NAME == "SEWANEE, TN US") %>% 
+  select(year, avg_temp) %>%
+  group_by(year) %>%
+  summarise(avg_temp=mean(avg_temp, na.rm=TRUE))
+
+ggplot( data = climate_2010_2020, aes( x = year, y = avg_temp)) +
+  geom_line() +
+labs( y = "Average Temperature", x = "Year")
+```
+
+# What is  Minimum and Maximum temperature over time for the entire period. 
+```{r}
+
+max_min <- sewanee_climate %>% 
+  select( year, TMIN, TMAX) %>% 
+  group_by(year) %>% 
+  summarize(TMAX = mean(TMAX, na.rm = TRUE), TMIN = mean(TMIN, na.rm = TRUE))
+
+ggplot( data = max_min )+
+  geom_line( aes( x = year, y = TMAX, color = "TMAX")) +
+  geom_line( aes( x = year, y = TMIN, color = "TMIN")) +
+  labs( title = "Annual Min and Max Temp per year",
+        y = "TMAX and TMIN in Degrees Farenheit", 
+        color = "Temp. Avg") +
+  theme_update()
+
+```
+
